@@ -1,16 +1,27 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
+from bson import ObjectId
 
 app = Flask(__name__)
+app.config["MONGO_URI"] = "mongodb://mongo:27017/"
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
-client = MongoClient()
+client = MongoClient("mongodb://mongo:27017/")
 db = client.ecommerce
 orders = db.orders
 
-@app.route('/orders', methods=['GET'])
+@app.route('/')
+def hello_geek():
+    return '<h1>Orders Microservice working</h2>'
+
+
+@app.route('/getallorders', methods=['GET'])
 def get_orders():
-    all_orders = list(orders.find())
-    return jsonify({'orders': all_orders})
+    orders = list(db.orders.find())
+    for order in orders:
+        order['_id'] = str(order['_id'])
+        order['date'] = order['date'].strftime("%Y-%m-%d %H:%M:%S")
+    return jsonify(orders)
 
 @app.route('/orders', methods=['POST'])
 def create_order():
@@ -20,8 +31,12 @@ def create_order():
 
 @app.route('/orders/<order_id>', methods=['GET'])
 def get_order(order_id):
-    order = orders.find_one({'_id': ObjectId(order_id)})
-    return jsonify({'order': order})
+    order = db.orders.find_one({'_id': ObjectId(order_id)})
+    if order is None:
+        return jsonify({'error': 'Order not found'}), 404
+    order['_id'] = str(order['_id'])
+    order['date'] = order['date'].strftime("%Y-%m-%d %H:%M:%S")
+    return jsonify(order)
 
 @app.route('/orders/<order_id>', methods=['PUT'])
 def update_order(order_id):
@@ -37,4 +52,4 @@ def delete_order(order_id):
 
 
 if __name__ == '__main__':
-    app.run(port=5010,debug=True)
+    app.run(port=5000,debug=True)

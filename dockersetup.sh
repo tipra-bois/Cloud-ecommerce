@@ -12,6 +12,6 @@ docker build . --tag products-docker
 
 cd ..
 
-export MONGODB_VERSION=6.0-ubi8
-docker run --name mongodb -d -p 27017:27017 -v $(pwd)/data:/data/db  --network mongodb  mongodb/mongodb-community-server:$MONGODB_VERSION
+docker network create --driver bridge mongodb
+
 

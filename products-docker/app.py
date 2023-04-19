@@ -1,18 +1,27 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
+from bson import ObjectId
 
 app = Flask(__name__)
+app.config["MONGO_URI"] = "mongodb://mongo:27017/"
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 
 
-client = MongoClient()
+client = MongoClient("mongodb://mongo:27017/")
 db = client.ecommerce
 products = db.products
 
-@app.route('/products', methods=['GET'])
+@app.route('/')
+def hello_geek():
+    return '<h1>Products Microservice working</h2>'
+
+@app.route('/getallproducts', methods=['GET'])
 def get_products():
-    all_products = list(products.find())
-    return jsonify({'products': all_products})
+    products = list(db.products.find())
+    for product in products:
+        product['_id'] = str(product['_id'])
+    return jsonify(products)
 
 @app.route('/products', methods=['POST'])
 def create_product():
@@ -22,8 +31,11 @@ def create_product():
 
 @app.route('/products/<product_id>', methods=['GET'])
 def get_product(product_id):
-    product = products.find_one({'_id': ObjectId(product_id)})
-    return jsonify({'product': product})
+    product = db.products.find_one({'_id': ObjectId(product_id)})
+    if product is None:
+        return jsonify({'error': 'Product not found'}), 404
+    product['_id'] = str(product['_id'])
+    return jsonify(product)
 
 @app.route('/products/<product_id>', methods=['PUT'])
 def update_product(product_id):
@@ -38,5 +50,5 @@ def delete_product(product_id):
 
 
 if __name__ == '__main__':
-    app.run(port=5005,debug=True)
+    app.run(port=5050,debug=True)
     
