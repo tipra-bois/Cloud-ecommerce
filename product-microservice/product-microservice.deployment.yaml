@@ -16,7 +16,7 @@ spec:
         - name: product-microservice
           image: product-microservice:3
           ports:
-            - containerPort: 8080
+            - containerPort: 7100
           env:
             - name: MONGODB_HOST
               value: mongodb  # Use the hostname of the mongodb service

@@ -7,6 +7,6 @@ spec:
     app: product-microservice
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 7100
+      targetPort: 7100
   type: NodePort

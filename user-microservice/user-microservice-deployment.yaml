@@ -16,7 +16,7 @@ spec:
         - name: user-microservice-kb
           image: user-microservice:4
           ports:
-            - containerPort: 7070
+            - containerPort: 7000
           env:
             - name: MONGODB_HOST
               value: mongodb  # Use the hostname of the mongodb service

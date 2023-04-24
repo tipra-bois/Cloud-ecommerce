@@ -16,7 +16,7 @@ RUN npm install
 COPY . .
 
 # Expose the port that the microservice will run on
-EXPOSE 7070
+EXPOSE 7000
 
 # Start the microservice
 CMD ["nodemon"]

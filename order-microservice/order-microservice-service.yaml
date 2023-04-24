@@ -7,6 +7,6 @@ spec:
     app: order-microservice
   ports:
     - protocol: TCP
-      port: 9090
-      targetPort: 9090
+      port: 7200
+      targetPort: 7200
   type: NodePort

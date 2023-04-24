@@ -16,7 +16,7 @@ spec:
         - name: order-microservice
           image: order-microservice:3
           ports:
-            - containerPort: 9090
+            - containerPort: 7200
           env:
             - name: MONGODB_HOST
               value: mongodb  # Use the hostname of the mongodb service
