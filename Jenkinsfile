@@ -14,35 +14,29 @@ pipeline {
     stages {
         stage('Checkout Source') {
             steps {
-                step {
+                script {
                     // Clone the GitHub repository
                     git branch: 'main', url: 'https://github.com/tipra-bois/Cloud-ecommerce.git'
+                }
+                step {
                     sh 'echo "Hello, git completed"'
+                }
+                step {
                     sh 'dir'
                 }
             }
         }
         stage('Build Images') {
             steps {
-                step {
+                script {
                     dir('order-microservice') {
-                        script {
-                            orderImage = docker.build ordermicroservice
-                        }
+                        orderImage = docker.build ordermicroservice
                     }
-                }
-                step {
                     dir('product-microservice') {
-                        script {
-                            productImage = docker.build productmicroservice
-                        }
+                        productImage = docker.build productmicroservice
                     }
-                }
-                step {
                     dir('user-microservice') {
-                        script {
-                            userImage = docker.build usermicroservice
-                        }
+                        userImage = docker.build usermicroservice
                     }
                 }
             }
@@ -52,30 +46,20 @@ pipeline {
                 registryCredential = 'dockerhub-credentials'
             }
             steps {
-                step {
+                script {
                     dir('order-microservice') {
-                        script {
-                            docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                                orderImage.push('latest')
-                            }
+                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                            orderImage.push('latest')
                         }
                     }
-                }
-                step {
                     dir('product-microservice') {
-                        script {
-                            docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                                productImage.push('latest')
-                            }
+                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                            productImage.push('latest')
                         }
                     }
-                }
-                step {
                     dir('user-microservice') {
-                        script {
-                            docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                                userImage.push('latest')
-                            }
+                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                            userImage.push('latest')
                         }
                     }
                 }
@@ -84,58 +68,40 @@ pipeline {
 
         stage('Deploy MongoDB') {
             steps {
-                step {
-                    // Deploy MongoDB using kubectl
-                    sh 'kubectl apply -f mongodb-deployment.yaml'
-                    sh 'kubectl apply -f mongodb-service.yaml'
-                }
+                sh 'kubectl apply -f mongodb-deployment.yaml'
+                sh 'kubectl apply -f mongodb-service.yaml'
             }
         }
         stage('Deploy RabbitMQ') {
-            steps{
-                 step {
-                // Deploy RabbitMQ using kubectl
+            steps {
                 sh 'kubectl apply -f rabbitmq-deployment.yaml'
                 sh 'kubectl apply -f rabbitmq-service.yaml'
                 sleep time: 60, unit: 'SECONDS'
             }
-            }
-           
         }
         stage('Deploy Microservices') {
             steps {
-                step {
+                script {
                     dir('order-microservice') {
-                        script {
-                            kubernetes.deploy(
+                        kubernetes.deploy(
                             configs: 'order-microservice-deployment.yaml',
-                            'order-microservice-service.yaml'
+                            service: 'order-microservice-service.yaml'
                         )
-                        }
                     }
-                }
-                step {
                     dir('product-microservice') {
-                        script {
-                            kubernetes.deploy(
+                        kubernetes.deploy(
                             configs: 'product-microservice-deployment.yaml',
-                            'product-microservice-service.yaml'
+                            service: 'product-microservice-service.yaml'
                         )
-                        }
                     }
-                }
-                step {
                     dir('user-microservice') {
-                        script {
-                            kubernetes.deploy(
+                        kubernetes.deploy(
                             configs: 'user-microservice-deployment.yaml',
-                            'user-microservice-service.yaml'
+                            service: 'user-microservice-service.yaml'
                         )
-                        }
                     }
                 }
             }
         }
     }
 }
-
