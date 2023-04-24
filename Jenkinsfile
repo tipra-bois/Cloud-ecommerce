@@ -38,35 +38,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Images') {
-            environment {
-                registryCredential = 'dockerhub-credentials'
-            }
-            steps {
-                dir('order-microservice') {
-                    script {
-                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                            orderImage.push('latest')
-                        }
-                    }
-                }
-                dir('product-microservice') {
-                    script {
-                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                            productImage.push('latest')
-                        }
-                    }
-                }
-                dir('user-microservice') {
-                    script {
-                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                            userImage.push('latest')
-                        }
-                    }
-                }
-            }
-        }
-
+        
         stage('Deploy MongoDB') {
             steps {
                 sh 'kubectl apply -f mongodb-deployment.yaml'
