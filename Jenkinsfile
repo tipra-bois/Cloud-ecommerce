@@ -13,7 +13,7 @@ pipeline {
 
     stages {
         stage('Checkout Source') {
-            steps {
+            step {
                 // Clone the GitHub repository
                 git branch: 'main', url: 'https://github.com/tipra-bois/Cloud-ecommerce.git'
                 sh 'echo "Hello, git completed"'
@@ -22,23 +22,25 @@ pipeline {
         }
         stage('Build Images') {
             steps {
-                dir('order-microservice') {
-                    script {
-                        orderImage = docker.build ordermicroservice
+                step {
+                    dir('order-microservice') {
+                        script {
+                            orderImage = docker.build ordermicroservice
+                        }
                     }
                 }
-            }
-            steps {
-                dir('product-microservice') {
-                    script {
-                        productImage = docker.build productmicroservice
+                step {
+                    dir('product-microservice') {
+                        script {
+                            productImage = docker.build productmicroservice
+                        }
                     }
                 }
-            }
-            steps {
-                dir('user-microservice') {
-                    script {
-                        userImage = docker.build usermicroservice
+                step {
+                    dir('user-microservice') {
+                        script {
+                            userImage = docker.build usermicroservice
+                        }
                     }
                 }
             }
@@ -48,43 +50,45 @@ pipeline {
                 registryCredential = 'dockerhub-credentials'
             }
             steps {
-                dir('order-microservice') {
-                    script {
-                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                            orderImage.push('latest')
+                step {
+                    dir('order-microservice') {
+                        script {
+                            docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                                orderImage.push('latest')
+                            }
                         }
                     }
                 }
-            }
-            steps {
-                dir('product-microservice') {
-                    script {
-                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                            productImage.push('latest')
+                step {
+                    dir('product-microservice') {
+                        script {
+                            docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                                productImage.push('latest')
+                            }
                         }
                     }
                 }
-            }
-            steps {
-                dir('user-microservice') {
-                    script {
-                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                            userImage.push('latest')
+                step {
+                    dir('user-microservice') {
+                        script {
+                            docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                                userImage.push('latest')
+                            }
                         }
                     }
                 }
             }
         }
-    
+
         stage('Deploy MongoDB') {
-            steps {
+            step {
                 // Deploy MongoDB using kubectl
                 sh 'kubectl apply -f mongodb-deployment.yaml'
                 sh 'kubectl apply -f mongodb-service.yaml'
             }
         }
         stage('Deploy RabbitMQ') {
-            steps {
+            step {
                 // Deploy RabbitMQ using kubectl
                 sh 'kubectl apply -f rabbitmq-deployment.yaml'
                 sh 'kubectl apply -f rabbitmq-service.yaml'
@@ -93,32 +97,34 @@ pipeline {
         }
         stage('Deploy Microservices') {
             steps {
-                dir('order-microservice') {
-                    script {
-                        kubernetes.deploy(
+                step {
+                    dir('order-microservice') {
+                        script {
+                            kubernetes.deploy(
                             configs: 'order-microservice-deployment.yaml',
                             'order-microservice-service.yaml'
                         )
+                        }
                     }
                 }
-            }
-            steps {
-                dir('product-microservice') {
-                    script {
-                        kubernetes.deploy(
+                step {
+                    dir('product-microservice') {
+                        script {
+                            kubernetes.deploy(
                             configs: 'product-microservice-deployment.yaml',
                             'product-microservice-service.yaml'
                         )
+                        }
                     }
                 }
-            }
-            steps {
-                dir('user-microservice') {
-                    script {
-                        kubernetes.deploy(
+                step {
+                    dir('user-microservice') {
+                        script {
+                            kubernetes.deploy(
                             configs: 'user-microservice-deployment.yaml',
                             'user-microservice-service.yaml'
                         )
+                        }
                     }
                 }
             }
