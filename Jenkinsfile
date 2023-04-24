@@ -48,14 +48,14 @@ pipeline {
 
         stage('Deploy MongoDB') {
             steps {
-                sh 'kubectl apply -f mongodb-deployment.yaml'
-                sh 'kubectl apply -f mongodb-service.yaml'
+                sh './kubectl apply -f mongodb-deployment.yaml'
+                sh './kubectl apply -f mongodb-service.yaml'
             }
         }
         stage('Deploy RabbitMQ') {
             steps {
-                sh 'kubectl apply -f rabbitmq-deployment.yaml'
-                sh 'kubectl apply -f rabbitmq-service.yaml'
+                sh './kubectl apply -f rabbitmq-deployment.yaml'
+                sh './kubectl apply -f rabbitmq-service.yaml'
                 sleep time: 60, unit: 'SECONDS'
             }
         }
