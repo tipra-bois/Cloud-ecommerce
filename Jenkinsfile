@@ -1,8 +1,18 @@
 pipeline {
+    environment {
+        ordermicroservice = 'CoderCatA5/order-microservice'
+        productmicroservice = 'CoderCatA5/product-microservice'
+        usermicroservice = 'CoderCatA5/user-microservice'
+
+        orderImage = ''
+        productImage = ''
+        userImage = ''
+    }
+
     agent any
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout Source') {
             steps {
                 // Clone the GitHub repository
                 git branch: 'main', url: 'https://github.com/tipra-bois/Cloud-ecommerce.git'
@@ -10,8 +20,62 @@ pipeline {
                 sh 'dir'
             }
         }
-     
+        stage('Build Images') {
+            steps {
+                dir('order-microservice') {
+                    script {
+                        orderImage = docker.build ordermicroservice
+                    }
+                }
+            }
+            steps {
+                dir('product-microservice') {
+                    script {
+                        productImage = docker.build productmicroservice
+                    }
+                }
+            }
+            steps {
+                dir('user-microservice') {
+                    script {
+                        userImage = docker.build usermicroservice
+                    }
+                }
+            }
         }
+        stage('Push Images') {
+            environment {
+                registryCredential = 'dockerhub-credentials'
+            }
+            steps {
+                dir('order-microservice') {
+                    script {
+                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                            orderImage.push('latest')
+                        }
+                    }
+                }
+            }
+            steps {
+                dir('product-microservice') {
+                    script {
+                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                            productImage.push('latest')
+                        }
+                    }
+                }
+            }
+            steps {
+                dir('user-microservice') {
+                    script {
+                        docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+                            userImage.push('latest')
+                        }
+                    }
+                }
+            }
+        }
+    
         stage('Deploy MongoDB') {
             steps {
                 // Deploy MongoDB using kubectl
@@ -27,70 +91,38 @@ pipeline {
                 sleep time: 60, unit: 'SECONDS'
             }
         }
-        stage('Build and Deploy Microservices') {
+        stage('Deploy Microservices') {
             steps {
-                // Build Docker images for each microservice
-                dir('user-microservice') {
-                    sh 'docker build -t user-microservice:4 .'
-                    sh 'kubectl apply -f user-microservice-deployment.yaml'
-                    sh 'kubectl apply -f user-microservice-service.yaml'
-                    sleep time: 60, unit: 'SECONDS'
-                }
-
-                dir('product-microservice') {
-                    sh 'docker build -t product-microservice:3 .'
-                    sh 'kubectl apply -f product-microservice.deployment.yaml'
-                    sh 'kubectl apply -f product-microservice-service.yaml'
-                    sleep time: 60, unit: 'SECONDS'
-                }
-
                 dir('order-microservice') {
-                    sh 'docker build -t order-microservice:3 .'
-                    sh 'kubectl apply -f order-microservice-deployment.yaml'
-                    sh 'kubectl apply -f order-microservice-service.yaml'
-                    sleep time: 60, unit: 'SECONDS'
+                    script {
+                        kubernetes.deploy(
+                            configs: 'order-microservice-deployment.yaml',
+                            'order-microservice-service.yaml'
+                        )
+                    }
+                }
+            }
+            steps {
+                dir('product-microservice') {
+                    script {
+                        kubernetes.deploy(
+                            configs: 'product-microservice-deployment.yaml',
+                            'product-microservice-service.yaml'
+                        )
+                    }
+                }
+            }
+            steps {
+                dir('user-microservice') {
+                    script {
+                        kubernetes.deploy(
+                            configs: 'user-microservice-deployment.yaml',
+                            'user-microservice-service.yaml'
+                        )
+                    }
                 }
             }
         }
-//         stage('Port Forwarding') {
-//             steps {
-//                 // Port forward each microservice for local testing
-//                 sh 'kubectl port-forward services/user-microservice 7070:7070'
-//                 sh 'kubectl port-forward services/product-microservice 8080:8080'
-//                 sh 'kubectl port-forward services/order-microservice 9090:9090'
-//             }
-//         }
-//         stage('Port Forwarding') {
-
-//                 // Run steps in parallel within the same stage
-//                 parallel {
-//                     stage('Port 7070') {
-//                         steps {
-//                             // Run step 1sleep time: 300, unit: 'SECONDS'
-//                             sh 'kubectl port-forward services/user-microservice 7070:7070'
-//                         }
-//                     }
-//                     stage('Port 8080') {
-//                         steps {
-//                             // Run step 2
-//                             sh 'kubectl port-forward services/product-microservice 8080:8080'
-//                         }
-//                     }
-//                     stage('Port 9090') {
-//                         steps {
-//                             // Run step 3
-//                             sh 'kubectl port-forward services/order-microservice 9090:9090'
-//                         }
-//                     }
-//                 }
-
-    //         }
     }
-
-//     post {
-//         always {
-//             // Clean up port forwarding processes
-//             sh 'pkill -f "kubectl port-forward"'
-//         }
-//     }
 }
+
