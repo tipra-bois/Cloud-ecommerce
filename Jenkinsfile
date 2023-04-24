@@ -1,8 +1,8 @@
 pipeline {
     environment {
-        ordermicroservice = 'CoderCatA5/order-microservice'
-        productmicroservice = 'CoderCatA5/product-microservice'
-        usermicroservice = 'CoderCatA5/user-microservice'
+        ordermicroservice = 'codercata5/order-microservice'
+        productmicroservice = 'codercata5/product-microservice'
+        usermicroservice = 'codercata5/user-microservice'
 
         orderImage = ''
         productImage = ''
