@@ -13,11 +13,13 @@ pipeline {
 
     stages {
         stage('Checkout Source') {
-            step {
-                // Clone the GitHub repository
-                git branch: 'main', url: 'https://github.com/tipra-bois/Cloud-ecommerce.git'
-                sh 'echo "Hello, git completed"'
-                sh 'dir'
+            steps {
+                step {
+                    // Clone the GitHub repository
+                    git branch: 'main', url: 'https://github.com/tipra-bois/Cloud-ecommerce.git'
+                    sh 'echo "Hello, git completed"'
+                    sh 'dir'
+                }
             }
         }
         stage('Build Images') {
@@ -81,19 +83,24 @@ pipeline {
         }
 
         stage('Deploy MongoDB') {
-            step {
-                // Deploy MongoDB using kubectl
-                sh 'kubectl apply -f mongodb-deployment.yaml'
-                sh 'kubectl apply -f mongodb-service.yaml'
+            steps {
+                step {
+                    // Deploy MongoDB using kubectl
+                    sh 'kubectl apply -f mongodb-deployment.yaml'
+                    sh 'kubectl apply -f mongodb-service.yaml'
+                }
             }
         }
         stage('Deploy RabbitMQ') {
-            step {
+            steps{
+                 step {
                 // Deploy RabbitMQ using kubectl
                 sh 'kubectl apply -f rabbitmq-deployment.yaml'
                 sh 'kubectl apply -f rabbitmq-service.yaml'
                 sleep time: 60, unit: 'SECONDS'
             }
+            }
+           
         }
         stage('Deploy Microservices') {
             steps {
