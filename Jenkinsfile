@@ -14,28 +14,25 @@ pipeline {
     stages {
         stage('Checkout Source') {
             steps {
-                script {
-                    // Clone the GitHub repository
-                    git branch: 'main', url: 'https://github.com/tipra-bois/Cloud-ecommerce.git'
-                }
-                step {
-                    sh 'echo "Hello, git completed"'
-                }
-                step {
-                    sh 'dir'
-                }
+                git branch: 'main', url: 'https://github.com/tipra-bois/Cloud-ecommerce.git'
+                sh 'echo "Hello, git completed"'
+                sh 'dir'
             }
         }
         stage('Build Images') {
             steps {
-                script {
-                    dir('order-microservice') {
+                dir('order-microservice') {
+                    script {
                         orderImage = docker.build ordermicroservice
                     }
-                    dir('product-microservice') {
+                }
+                dir('product-microservice') {
+                    script {
                         productImage = docker.build productmicroservice
                     }
-                    dir('user-microservice') {
+                }
+                dir('user-microservice') {
+                    script {
                         userImage = docker.build usermicroservice
                     }
                 }
@@ -46,18 +43,22 @@ pipeline {
                 registryCredential = 'dockerhub-credentials'
             }
             steps {
-                script {
-                    dir('order-microservice') {
+                dir('order-microservice') {
+                    script {
                         docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
                             orderImage.push('latest')
                         }
                     }
-                    dir('product-microservice') {
+                }
+                dir('product-microservice') {
+                    script {
                         docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
                             productImage.push('latest')
                         }
                     }
-                    dir('user-microservice') {
+                }
+                dir('user-microservice') {
+                    script {
                         docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
                             userImage.push('latest')
                         }
@@ -81,23 +82,45 @@ pipeline {
         }
         stage('Deploy Microservices') {
             steps {
-                script {
-                    dir('order-microservice') {
+                dir('order-microservice') {
+                    script {
                         kubernetes.deploy(
                             configs: 'order-microservice-deployment.yaml',
-                            service: 'order-microservice-service.yaml'
+                            delegate: true,
+                            enableConfigSubstitution: true
+                        )
+                        kubernetes.deploy(
+                            configs: 'order-microservice-service.yaml',
+                            delegate: true,
+                            enableConfigSubstitution: true
                         )
                     }
-                    dir('product-microservice') {
+                }
+                dir('product-microservice') {
+                    script {
                         kubernetes.deploy(
                             configs: 'product-microservice-deployment.yaml',
-                            service: 'product-microservice-service.yaml'
+                            delegate: true,
+                            enableConfigSubstitution: true
+                        )
+                        kubernetes.deploy(
+                            configs: 'product-microservice-service.yaml',
+                            delegate: true,
+                            enableConfigSubstitution: true
                         )
                     }
-                    dir('user-microservice') {
+                }
+                dir('user-microservice') {
+                    script {
                         kubernetes.deploy(
                             configs: 'user-microservice-deployment.yaml',
-                            service: 'user-microservice-service.yaml'
+                            delegate: true,
+                            enableConfigSubstitution: true
+                        )
+                        kubernetes.deploy(
+                            configs: 'user-microservice-service.yaml',
+                            delegate: true,
+                            enableConfigSubstitution: true
                         )
                     }
                 }
