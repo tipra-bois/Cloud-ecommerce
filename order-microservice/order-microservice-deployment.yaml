@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: order-microservice
-          image: order-microservice:3
+          image: codercata5/order-microservice
           ports:
             - containerPort: 7200
           env:

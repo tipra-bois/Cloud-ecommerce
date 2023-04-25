@@ -11,3 +11,15 @@ spec:
       port: 8080
       targetPort: 8080
       nodePort: 30000
+    - name: http
+      port: 7000
+      targetPort: 7000
+      nodePort: 7000
+    - name: http
+      port: 7100
+      targetPort: 7100
+      nodePort: 7100
+    - name: http
+      port: 7200
+      targetPort: 7200
+      nodePort: 7200

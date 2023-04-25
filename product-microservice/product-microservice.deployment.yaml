@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: product-microservice
-          image: product-microservice:3
+          image: codercata5/product-microservice
           ports:
             - containerPort: 7100
           env:
