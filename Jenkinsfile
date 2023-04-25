@@ -38,6 +38,17 @@ pipeline {
                 }
             }
         }
+        stage('Push Images') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+                        orderImage.push()
+                        productImage.push()
+                        userImage.push()
+                    }
+                }
+            }
+        }
 
         stage('List pods') {
             steps{
