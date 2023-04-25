@@ -13,16 +13,19 @@ spec:
         app: jenkins
     spec:
       containers:
-      - name: jenkins
-        image: jenkins/jenkins:lts
-        ports:
-          - name: http-port
-            containerPort: 8080
-          - name: jnlp-port
-            containerPort: 50000
-        volumeMounts:
-          - name: jenkins-vol
-            mountPath: /var/jenkins_vol
+        - name: jenkins
+          image: codercata5/jenkins
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
       volumes:
-        - name: jenkins-vol
-          emptyDir: {}
+        - name: jenkins-home
+          hostPath:
+            path: /home/ayushsingh/jenkins
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
